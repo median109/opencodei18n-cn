@@ -17,7 +17,7 @@ OpenCode TUI 界面汉化插件 —— 在 [opencode-i18n](https://github.com/hu
 ### 方式一：打通 GitHub 后安装（推荐）
 
 ```bash
-opencode plugin install https://github.com/<你的用户名>/opencodei18n-cn
+opencode plugin install https://github.com/median109/opencodei18n-cn
 ```
 
 ### 方式二：本地目录安装（不需要 npm/pnpm/bun）
