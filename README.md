@@ -14,54 +14,33 @@ OpenCode TUI 界面汉化插件 —— 在 [opencode-i18n](https://github.com/hu
 
 ## 一键安装
 
-### 方式一：npm 安装（推荐）
+### 方式一：打通 GitHub 后安装（推荐）
 
 ```bash
-opencode plugin add opencode-i18n-cn
+opencode plugin install https://github.com/median109/opencodei18n-cn
 ```
-
-安装后重启 OpenCode，运行 `/i18n` 选择 **简体中文**。选择 `English` 会回到原始英文界面。
 
 ### 方式二：本地目录安装（不需要 npm/pnpm/bun）
 
-将插件目录复制到 `~/.config/opencode/plugins/` 下：
-
 ```bash
-cp -r /path/to/opencodei18n-cn ~/.config/opencode/plugins/opencode-i18n-cn
+opencode plugin install /home/mi/Documents/script/opencodei18n-cn
 ```
 
-重启 OpenCode 即可。
+> 本地目录安装走的是「文件插件」通道，**不会**自动安装 `node_modules` 依赖。
+> 若你是从 GitHub/npm 方式安装，声明在 `package.json` 里的 `@opentui/core`、`@opentui/solid`、`solid-js`、`entities` 会由插件管理器自动拉取。
+> 如果是本地目录安装，请先在目录内手动 `npm install` 或 `bun install`，保证 `@opentui/*` 可被解析（TUI 插件渲染依赖它们）。
+
+安装后重启 OpenCode，运行 `/i18n` 选择 **简体中文**。选择 `English` 会回到原始英文界面。
 
 说明：
 
-- 本插件基于 opencode v2 公开插件 API（`Plugin.define` + `ui.slot` + `keymap.layer` + `storage.store` + `dialog.select`），无内部 patch，跨版本优雅生存。
+- 插件会自动写入 `tui.json`（TUI 端）的 `plugin` 列表。
 - 插件自带语言包（`i18n/locales/*.json`），开箱即用。
 - 重新安装/覆盖前，旧版本 `opencode-i18n` 请先移除，避免两个翻译插件并存：
 
 ```bash
 opencode plugin remove opencode-i18n
 ```
-
-## 命令
-
-| 命令 | 说明 |
-| --- | --- |
-| `/i18n` 或 `/语言` | 打开语言选择对话框 |
-| `/tips` 或 `/提示` | 切换主页提示的显示/隐藏 |
-
-也可通过命令面板（`Ctrl+P`）搜索 `切换界面语言` 或 `切换主页提示显示`。
-
-## 跨版本优雅生存
-
-本插件只使用 opencode v2 公开插件 API，不依赖内部补丁。核心机制：
-
-- **槽位声明**：`context.ui.slot({ prepend: "home.footer" })` —— 在内置 footer 上方渲染提示，不替换内置内容。
-- **状态持久化**：`context.storage.store` —— Solid 响应式 store，JSON 持久化到磁盘，跨重启同步。
-- **快捷键解析**：`context.keymap.shortcuts(id)` —— 反应式读取注册命令的格式化快捷键；若命令不存在或不可解析，对应提示自动省略（优雅降级）。
-- **语言选择**：`context.ui.dialog.select` —— Promise 弹窗选择器。
-- **命令注册**：`context.keymap.layer` —— 注册 `/i18n` 和 `/tips` 命令。
-
-前导键（leader）提示：v2 中 leader 为 timed 伪命令，仅在 leader timeout 窗口内可达。插件通过 `shortcuts("leader")` 反应式解析；若返回空（非待输入态），该条提示自动省略，与内置键盘帮助行为一致。
 
 ## 自定义语言包
 
@@ -98,12 +77,17 @@ opencode plugin remove opencode-i18n
 
 新增语言时，只要在 `i18n/locales/` 添加一个 locale JSON 即可被自动识别；**提示（tips）目前仅内置中文（`zh-Hans`）**，其它语言包暂未翻译 tips（缺少 `tips` 数组时该语言不显示提示、也不隐藏内置英文提示）。
 
+## 依赖说明
+
+主界面提示通过 TUI 插件的 `home_bottom` slot 渲染，需要 `@opentui/solid` 的 JSX 运行时。依赖版本与 OpenCode 内部绑定的 0.4.5 保持一致（`@opentui/core` / `@opentui/solid`），升级 OpenCode 后如界面渲染异常，请同步核对这两个包版本。
+
 ## 文件说明
 
-- `tui.tsx`：v2 插件入口（re-export）。
-- `plugins/i18n/index.tsx`：`Plugin.define` 主入口。声明 `home.footer` 槽位（prepend）、注册 `/i18n` 和 `/tips` 命令、管理语言状态（`storage.store`）。
-- `plugins/i18n/tips-view.tsx`：主页面提示组件（Solid JSX）。负责 `{key:xxx}` 快捷键解析、`{highlight}` 高亮、随机轮换、连接检测。
-- `i18n/lib.ts`：共享路径、配置与语言解析逻辑（复用，无改动）。
+- `plugins/i18n/index.ts`：TUI 插件。改写界面标题/描述、注册 `/i18n` 语言选择命令，并注册 `home_bottom` 提示 slot、隐藏内置英文提示。
+- `plugins/i18n/tips-view.tsx`：**新增**。主页面提示组件（JSX），负责快捷键替换、高亮解析与随机轮换。
+- `plugins/i18n/server.ts`：server 插件，向 OpenCode 注册 `i18n-state` 工具。
+- `tools/i18n-state.ts`：状态工具，负责开关与语言选择（`status`/`set`/`toggle`/`locale`/`locales`）。
+- `i18n/lib.ts`：共享路径、状态与语言解析逻辑；**新增 `tips` 字段归一化**。
 - `i18n/config.json`：默认语言与内置语言排序。
 - `i18n/locales/*.json`：语言包；`zh-Hans.json` 内含 `tips` 提示文案。
 
