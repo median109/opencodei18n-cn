@@ -1,31 +1,27 @@
 {
   "name": "opencode-i18n-cn",
-  "version": "1.0.0",
-  "description": "OpenCode TUI 中文本地化插件 — 完整汉化界面 + 主页面提示（tips）汉化，一键安装。",
+  "version": "2.0.0",
+  "description": "OpenCode TUI 中文汉化插件 — 主页提示（tips）+ `/i18n` 语言选择器。基于 v2 公开插件 API 重写，跨版本优雅生存。",
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./tui": "./plugins/i18n/index.ts",
-    "./server": "./plugins/i18n/server.ts"
+    "./tui": "./tui.tsx"
   },
   "files": [
+    "tui.tsx",
     "plugins",
     "i18n",
-    "tools",
     "README.md",
     "LICENSE"
   ],
   "engines": {
-    "opencode": ">=1.18.0"
+    "opencode": ">=2.0.0"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.14.0"
-  },
-  "dependencies": {
-    "@opentui/core": "0.4.5",
-    "@opentui/solid": "0.4.5",
-    "entities": "7.0.1",
-    "solid-js": "1.9.12"
+    "@opencode/plugin": ">=2.0.0",
+    "@opentui/core": ">=0.5.10",
+    "@opentui/solid": ">=0.5.10",
+    "solid-js": ">=1.9.15"
   },
   "devDependencies": {
     "@types/node": "^26.0.1",
